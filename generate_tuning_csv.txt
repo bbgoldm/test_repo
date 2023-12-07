@@ -107,8 +107,10 @@ def main():
     print("Begin building taglist...")
     MVobjectList, CVObjectList = build_objects(TUNING_FILE)  
     print("Begin writing taglist to file...")
-    write_tags(MVobjectList, CV_TUNING_FILE)
-    write_tags(CVObjectList, MV_TUNING_FILE)
+    write_MV_tags(MVobjectList, CV_TUNING_FILE)
+    write_CV_tags(CVObjectList, MV_TUNING_FILE)
+    FullObjectList = MVobjectList + CVObjectList
+    write_tags_excel(FullObjectList, TUNING_FILE)
     print(str(TUNING_FILE) + " file generated.")
     print("All done!")
 
@@ -124,7 +126,7 @@ def build_objects(output_file):
                 dmcTagName = row.split(':')[1].replace("]","")
                 new_object = MV_Object(dmcTagName)
                 MVObjectList.append(new_object)
-            if ('[DEP:' in row):
+            elif ('[DEP:' in row):
                 dmcTagName = row.split(':')[1].replace("]","")
                 new_object = CV_Object(dmcTagName)
                 CVObjectList.append(new_object)
@@ -132,206 +134,206 @@ def build_objects(output_file):
             # CV Objects Parameters
             #-----------------------------------------------------
             # Description (Dep), DESCDEP
-            elif ('DESCDEP' in row):
+            elif ('.DESCDEP~' in row):
                 new_object.description = row.split('~~~')[3]
             # DynamicHighLimitConcern (Dep), ECECMU
-            elif ('ECECMU' in row):
+            elif ('.ECECMU~' in row):
                 new_object.dynamicHighLimitConcern = row.split('~~~')[3]
             # DynamicHighLimitZone (Dep), TRANZU
-            elif ('TRANZU' in row):
+            elif ('.TRANZU~' in row):
                 new_object.dynamicHighLimitZone = row.split('~~~')[3]
             # DynamicLowLimitConcern (Dep), ECECML
-            elif ('ECECML' in row):
+            elif ('.ECECML~' in row):
                 new_object.dynamicLowLimitConcern = row.split('~~~')[3]
             # DynamicLowLimitZone (Dep), TRANZL
-            elif ('TRANZL' in row):
+            elif ('.TRANZL~' in row):
                 new_object.dynamicLowLimitZone = row.split('~~~')[3]
             # DynamicTargetConcern (Dep), ECECMM
-            elif ('ECECMM' in row):
+            elif ('.ECECMM~' in row):
                 new_object.dynamicTargetConcern = row.split('~~~')[3]
             # ECEsInEngineeringUnits (Dep), XFRMECEC
-            elif ('XFRMECEC' in row):
+            elif ('.XFRMECEC~' in row):
                 new_object.eceInEngineeringUnits = row.split('~~~')[3]
             # EngineeringHighLimit (Dep), UDPENG
-            elif ('UDPENG' in row):
+            elif ('.UDPENG~' in row):
                 new_object.engineeringHighLimit = row.split('~~~')[3]
             # EngineeringLowLimit (Dep), LDPENG
-            elif ('LDPENG' in row):
+            elif ('.LDPENG~' in row):
                 new_object.engineeringLowLimit = row.split('~~~')[3]
             # EngineeringHighLimitJustification (Dep), UDPENGJ
-            elif ('UDPENGJ' in row):
+            elif ('.UDPENGJ~' in row):
                 new_object.engineeringHighLimitJustification = row.split('~~~')[3]
             # EngineeringLowLimitJustification (Dep), LDPENGJ
-            elif ('LDPENGJ' in row):
+            elif ('.LDPENGJ~' in row):
                 new_object.engineeringLowLimitJustification = row.split('~~~')[3]
             # ETParticipationSwitch (Dep), ETCSWC
-            elif ('ETCSWC' in row):
+            elif ('.ETCSWC~' in row):
                 new_object.etParticipationSwitch = row.split('~~~')[3]
             # IsCritical (Dep), CRIDEP
-            elif ('CRIDEP' in row):
+            elif ('.CRIDEP~' in row):
                 new_object.isCritical = row.split('~~~')[3]
             # LPCost (Dep), CVCST
-            elif ('CVCST' in row):
+            elif ('.CVCST~' in row):
                 new_object.lpCost = row.split('~~~')[3]
             # MaximumImbalances (Dep), MXNIMB
-            elif ('MXNIMB' in row):
+            elif ('.MXNIMB~' in row):
                 new_object.maximumImbalances = row.split('~~~')[3]
             # MaximumSteadyStateCVStep (Dep), CVSTEP
-            elif ('CVSTEP' in row):
+            elif ('.CVSTEP~' in row):
                 new_object.maximumSteadyStateCVStep = row.split('~~~')[3]
             # OperatorHighLimit (Dep), UDEPTG
-            elif ('UDEPTG' in row):
+            elif ('.UDEPTG~' in row):
                 new_object.operatorHighLimit = row.split('~~~')[3]
             # OperatorLowLimit (Dep), LDEPTG
-            elif ('LDEPTG' in row):
+            elif ('.LDEPTG~' in row):
                 new_object.operatorLowLimit = row.split('~~~')[3]
             # PredErrorFilterHorizon (Dep), PRERHORIZ
-            elif ('PRERHORIZ' in row):
+            elif ('.PRERHORIZ~' in row):
                 new_object.predErrorFilterHorizon = row.split('~~~')[3]
             # PredErrorFilterLag (Dep), PRERTAU
-            elif ('PRERTAU' in row):
+            elif ('.PRERTAU~' in row):
                 new_object.predErrorFilterLag = row.split('~~~')[3]
             # PredErrorFilterType (Dep), PRERTYPE
-            elif ('PRERTYPE' in row):
+            elif ('.PRERTYPE~' in row):
                 new_object.predErrorFilterType = row.split('~~~')[3]
             # RampHorizon (Dep)  not in DMCPlus
-            elif ('RAMP_HORIZON' in row):
+            elif ('.RAMP_HORIZON~' in row):
                 new_object.rampHorizon = row.split('~~~')[3]
             # RampRate (Dep), RAMPRT
-            elif ('RAMPRT' in row):
+            elif ('.RAMPRT~' in row):
                 new_object.rampRate = row.split('~~~')[3]
             # RampSetpoint (Dep), RAMPSP
-            elif ('RAMPSP' in row):
+            elif ('.RAMPSP~' in row):
                 new_object.rampSetpoint = row.split('~~~')[3]
             # RampControllerShedOption (Dep), RSHEDSUB
-            elif ('RSHEDSUB' in row):
+            elif ('.RSHEDSUB~' in row):
                 new_object.rampControllerShedOption = row.split('~~~')[3]
             # RotationFactor (Dep), ROTFAC
-            elif ('ROTFAC' in row):
+            elif ('.ROTFAC~' in row):
                 new_object.rotationFactor = row.split('~~~')[3]
             # SSHighLimitConcern (Dep), ECELPU
-            elif ('ECELPU' in row):
+            elif ('.ECELPU~' in row):
                 new_object.ssHighLimitConcern = row.split('~~~')[3]
             # SSHighLimitRank (Dep), CVRANKU
-            elif ('CVRANKU' in row):
+            elif ('.CVRANKU~' in row):
                 new_object.ssHighLimitRank = row.split('~~~')[3]
             # SSHighLimitRankTypeQP (Dep), CVLPQU
-            elif ('CVLPQU' in row):
+            elif ('.CVLPQU~' in row):
                 new_object.ssHighLimitRankTypeQP = row.split('~~~')[3]
             # SSLowLimitConcern (Dep), ECELPL
-            elif ('ECELPL' in row):
+            elif ('.ECELPL~' in row):
                 new_object.ssLowLimitConcern = row.split('~~~')[3]
             # SSLowLimitRank (Dep), CVRANKL
-            elif ('CVRANKL' in row):
+            elif ('.CVRANKL~' in row):
                 new_object.ssLowLimitRank = row.split('~~~')[3]
             # SSLowLimitRankTypeQP (Dep), CVLPQL
-            elif ('CVLPQL' in row):
+            elif ('.CVLPQL~' in row):
                 new_object.ssLowLimitRankTypeQP = row.split('~~~')[3]
             # SSTargetConcern (Dep), not in DMCPlus
-            elif ('SSTargetConcern' in row):
+            elif ('.SSTargetConcern~' in row):
                 new_object.ssTargetConcern = row.split('~~~')[3]
             # SSTargetConcernLower (Dep), ETCECEL
-            elif ('ETCECEL' in row):
+            elif ('.ETCECEL~' in row):
                 new_object.ssTargetConcernLower = row.split('~~~')[3]
             # SSTargetConcernUpper (Dep), ETCECEU
-            elif ('ETCECEU' in row):
+            elif ('.ETCECEU~' in row):
                 new_object.ssTargetConcernUpper = row.split('~~~')[3]
             # SSTargetRank (Dep), not in DMCPlus
-            elif ('SSTargetRank' in row):
+            elif ('.SSTargetRank~' in row):
                 new_object.ssTargetRank = row.split('~~~')[3]
             # SSTargetRankLower (Dep), ETCRL
-            elif ('ETCRL' in row):
+            elif ('.ETCRL~' in row):
                 new_object.ssTargetRankLower = row.split('~~~')[3]
             # SSTargerRankUpper (Dep), ETCRU
-            elif ('ETCRU' in row):
+            elif ('.ETCRU~' in row):
                 new_object.ssTargetRankUpper = row.split('~~~')[3]
             # SubcontrollerName (Dep), CVINSB
-            elif ('CVINSB' in row):
+            elif ('.CVINSB~' in row):
                 new_object.subcontrollerName = row.split('~~~')[3]
             # Units (Dep), ENGDEP
-            elif ('ENGDEP' in row):
+            elif ('.ENGDEP~' in row):
                 new_object.units = row.split('~~~')[3]
             # ValidityHighLimit (Dep), UVLDEP
-            elif ('UVLDEP' in row):
+            elif ('.UVLDEP~' in row):
                 new_object.validityHighLimit = row.split('~~~')[3]
             # ValidityLowLimit (Dep), LVLDEP
-            elif ('LVLDEP' in row):
+            elif ('.LVLDEP~' in row):
                 new_object.validityLowLimit = row.split('~~~')[3]
             #-----------------------------------------------------
             # MV Objects Parameters
             #-----------------------------------------------------
             # CostRank (Ind), CSTRANK
-            elif ('CSTRANK' in row):
+            elif ('.CSTRANK~' in row):
                 new_object.costRank = row.split('~~~')[3]
             # Desription (Ind), DESCIND
-            elif ('DESCIND' in row):
+            elif ('.DESCIND~' in row):
                 new_object.description = row.split('~~~')[3]
             # DynamicMinimumMovement (Ind), DMINMOV
-            elif ('DMINMOV' in row):
+            elif ('.DMINMOV~' in row):
                 new_object.dynamicMinimumMovement = row.split('~~~')[3]
             # EngineeringHighLimit (Ind), UMVENG
-            elif ('UMVENG' in row):
+            elif ('.UMVENG~' in row):
                 new_object.engineeringHighLimit = row.split('~~~')[3]
             # EngineeringHighLimitJustification (Ind), UMVENGJ
-            elif ('UMVENGJ' in row):
+            elif ('.UMVENGJ~' in row):
                 new_object.engineeringHighLimitJustification = row.split('~~~')[3]
             # EngineeringLowLimit (Ind), LMVENG
-            elif ('LMVENG' in row):
+            elif ('.LMVENG~' in row):
                 new_object.engineeringLowLimit = row.split('~~~')[3]
             # EngineeringLowLimitJustification (Ind), MVENGJ
-            elif ('MVENGJ' in row):
+            elif ('.MVENGJ~' in row):
                 new_object.engineeringLowLimitJustification = row.split('~~~')[3]
             # ETParticipationSwitch (Ind), ETMSWC
-            elif ('ETMSWC' in row):
+            elif ('.ETMSWC~' in row):
                 new_object.etParticipationSwitch = row.split('~~~')[3]
             # LPCost (Ind), CST
-            elif ('CST' in row):
+            elif ('.CST~' in row):
                 new_object.lpCost = row.split('~~~')[3]
             # MaximumMove (Ind), MAXMOV
-            elif ('MAXMOV' in row):
+            elif ('.MAXMOV~' in row):
                 new_object.maximumMove = row.split('~~~')[3]
             # MoveSuppression (Ind), SUPMOV
-            elif ('SUPMOV' in row):
+            elif ('.SUPMOV~' in row):
                 new_object.moveSuppression = row.split('~~~')[3]
             # OperatorHighLimit (Ind), ULINDM
-            elif ('ULINDM' in row):
+            elif ('.ULINDM~' in row):
                 new_object.operatorHighLimit = row.split('~~~')[3]
             # OperatorLowLimit (Ind), LLINDM
-            elif ('LLINDM' in row):
+            elif ('.LLINDM~' in row):
                 new_object.operatorLowLimit = row.split('~~~')[3]
             # SSMoveLimit (ind), SSSTEP
-            elif ('SSSTEP' in row):
+            elif ('.SSSTEP~' in row):
                 new_object.ssMoveLimit = row.split('~~~')[3]
             # SSTargetConcern (Ind) -- not in dmcplus
-            elif ('SSTargetConcern' in row):
+            elif ('.SSTargetConcern~' in row):
                 new_object.ssTargetConcern = row.split('~~~')[3]
             # SSTargetConcernLower (Ind), ETMECEL
-            elif ('ETMECEL' in row):
+            elif ('.ETMECEL~' in row):
                 new_object.ssTargetConcernLower = row.split('~~~')[3]
             # SSTargetConcernUpper (Ind), ETMECEU
-            elif ('ETMECEU' in row):
+            elif ('.ETMECEU~' in row):
                 new_object.ssTargetConcernUpper = row.split('~~~')[3]
             # SSTargetRank -- not in dmcplus            
             # SSTargetRankLower (Ind), ETMRL
-            elif ('ETMRL' in row):
+            elif ('.ETMRL~' in row):
                 new_object.ssTargetRankLower = row.split('~~~')[3]
             # SSTargetRankUpper (ind), ETMRU
-            elif ('ETMRU' in row):
+            elif ('.ETMRU~' in row):
                 new_object.ssTargetRankUpper = row.split('~~~')[3]
             # SteadyStateMinMovement (Ind), LPCRIT
-            elif ('LPCRIT' in row):
+            elif ('.LPCRIT~' in row):
                 new_object.steadyStateMinMovement = row.split('~~~')[3]
             # SubcontrollerName (Ind), MVINSB
-            elif ('MVINSB' in row):
+            elif ('.MVINSB~' in row):
                 new_object.subcontrollerName = row.split('~~~')[3]
             # Units (Ind), ENGIND
-            elif ('ENGIND' in row):
+            elif ('.ENGIND~' in row):
                 new_object.units = row.split('~~~')[3]
             # ValidityHighLimit (Ind), UVLIND
-            elif ('UVLIND' in row):
+            elif ('.UVLIND~' in row):
                 new_object.validityHighLimit = row.split('~~~')[3]
             # ValidityLowLimit (ind), LVLIND
-            elif ('LVLIND' in row):
+            elif ('.LVLIND~' in row):
                 new_object.validityLowLimit = row.split('~~~')[3]
 
     return MVObjectList, CVObjectList
@@ -413,81 +415,83 @@ def write_tags_excel(tags, output_file):
     worksheet2.write(0, 40, 'Units')
     worksheet2.write(0, 41, 'ValidityHighLimit')
     worksheet2.write(0, 42, 'ValidityLowLimit')
-    row = 1
+    mv_row = 0
+    cv_row = 0
     for tag in tags:
         if isinstance(tag, MV_Object):
-            worksheet1.write(row, 0, tag.dmcTagName)
-            worksheet1.write(row, 1, tag.measurementTag)
-            worksheet1.write(row, 2, tag.costRank)
-            worksheet1.write(row, 3, tag.description)
-            worksheet1.write(row, 4, tag.dynamicMinimumMovement)
-            worksheet1.write(row, 5, tag.engineeringHighLimit)
-            worksheet1.write(row, 6, tag.engineeringHighLimitJustification)
-            worksheet1.write(row, 7, tag.engineeringLowLimit)
-            worksheet1.write(row, 8, tag.engineeringLowLimitJustification)
-            worksheet1.write(row, 9, tag.etParticipationSwitch)
-            worksheet1.write(row, 10, tag.lpCost)
-            worksheet1.write(row, 11, tag.maximumMove)
-            worksheet1.write(row, 12, tag.moveSuppression)
-            worksheet1.write(row, 13, tag.operatorHighLimit)
-            worksheet1.write(row, 14, tag.operatorLowLimit)
-            worksheet1.write(row, 15, tag.ssMoveLimit)
-            worksheet1.write(row, 16, tag.ssTargetConcern)
-            worksheet1.write(row, 17, tag.ssTargetConcernLower)
-            worksheet1.write(row, 18, tag.ssTargetConcernUpper)
-            worksheet1.write(row, 19, tag.ssTargetRank)
-            worksheet1.write(row, 20, tag.ssTargetRankLower)
-            worksheet1.write(row, 21, tag.ssTargetRankUpper)
-            worksheet1.write(row, 22, tag.steadyStateMinMovement)
-            worksheet1.write(row, 23, tag.subcontrollerName)
-            worksheet1.write(row, 24, tag.units)
-            worksheet1.write(row, 25, tag.validityHighLimit)
-            worksheet1.write(row, 26, tag.validityLowLimit)
+            mv_row += 1
+            worksheet1.write(mv_row, 0, tag.dmcTagName)
+            worksheet1.write(mv_row, 1, tag.measurementTag)
+            worksheet1.write(mv_row, 2, tag.costRank)
+            worksheet1.write(mv_row, 3, tag.description)
+            worksheet1.write(mv_row, 4, tag.dynamicMinimumMovement)
+            worksheet1.write(mv_row, 5, tag.engineeringHighLimit)
+            worksheet1.write(mv_row, 6, tag.engineeringHighLimitJustification)
+            worksheet1.write(mv_row, 7, tag.engineeringLowLimit)
+            worksheet1.write(mv_row, 8, tag.engineeringLowLimitJustification)
+            worksheet1.write(mv_row, 9, tag.etParticipationSwitch)
+            worksheet1.write(mv_row, 10, tag.lpCost)
+            worksheet1.write(mv_row, 11, tag.maximumMove)
+            worksheet1.write(mv_row, 12, tag.moveSuppression)
+            worksheet1.write(mv_row, 13, tag.operatorHighLimit)
+            worksheet1.write(mv_row, 14, tag.operatorLowLimit)
+            worksheet1.write(mv_row, 15, tag.ssMoveLimit)
+            worksheet1.write(mv_row, 16, tag.ssTargetConcern)
+            worksheet1.write(mv_row, 17, tag.ssTargetConcernLower)
+            worksheet1.write(mv_row, 18, tag.ssTargetConcernUpper)
+            worksheet1.write(mv_row, 19, tag.ssTargetRank)
+            worksheet1.write(mv_row, 20, tag.ssTargetRankLower)
+            worksheet1.write(mv_row, 21, tag.ssTargetRankUpper)
+            worksheet1.write(mv_row, 22, tag.steadyStateMinMovement)
+            worksheet1.write(mv_row, 23, tag.subcontrollerName)
+            worksheet1.write(mv_row, 24, tag.units)
+            worksheet1.write(mv_row, 25, tag.validityHighLimit)
+            worksheet1.write(mv_row, 26, tag.validityLowLimit)
         elif isinstance(tag, CV_Object):
-            worksheet2.write(row, 0, tag.dmcTagName)
-            worksheet2.write(row, 1, tag.measurementTag)
-            worksheet2.write(row, 2, tag.description)
-            worksheet2.write(row, 3, tag.dynamicHighLimitConcern)
-            worksheet2.write(row, 4, tag.dynamicHighLimitZone)
-            worksheet2.write(row, 5, tag.dynamicLowLimitConcern)
-            worksheet2.write(row, 6, tag.dynamicLowLimitZone)
-            worksheet2.write(row, 7, tag.dynamicTargetConcern)
-            worksheet2.write(row, 8, tag.eceInEngineeringUnits)
-            worksheet2.write(row, 9, tag.engineeringHighLimit)
-            worksheet2.write(row, 10, tag.engineeringLowLimit)
-            worksheet2.write(row, 11, tag.engineeringHighLimitJustification)
-            worksheet2.write(row, 12, tag.engineeringLowLimitJustification)
-            worksheet2.write(row, 13, tag.etParticipationSwitch)
-            worksheet2.write(row, 14, tag.isCritical)
-            worksheet2.write(row, 15, tag.lpCost)
-            worksheet2.write(row, 16, tag.maximumImbalances)
-            worksheet2.write(row, 17, tag.maximumSteadyStateCVStep)
-            worksheet2.write(row, 18, tag.operatorHighLimit)
-            worksheet2.write(row, 19, tag.operatorLowLimit)
-            worksheet2.write(row, 20, tag.predErrorFilterHorizon)
-            worksheet2.write(row, 21, tag.predErrorFilterLag)
-            worksheet2.write(row, 22, tag.predErrorFilterType)
-            worksheet2.write(row, 23, tag.rampHorizon)
-            worksheet2.write(row, 24, tag.rampRate)
-            worksheet2.write(row, 25, tag.rampSetpoint)
-            worksheet2.write(row, 26, tag.rampControllerShedOption)
-            worksheet2.write(row, 27, tag.rotationFactor)
-            worksheet2.write(row, 28, tag.ssHighLimitConcern)
-            worksheet2.write(row, 29, tag.ssHighLimitRank)
-            worksheet2.write(row, 30, tag.ssHighLimitRankTypeQP)
-            worksheet2.write(row, 31, tag.ssLowLimitConcern)
-            worksheet2.write(row, 32, tag.ssLowLimitRank)
-            worksheet2.write(row, 33, tag.ssLowLimitRankTypeQP)
-            worksheet2.write(row, 34, tag.ssTargetConcern)
-            worksheet2.write(row, 35, tag.ssTargetConcernLower)
-            worksheet2.write(row, 36, tag.ssTargetConcernUpper)
-            worksheet2.write(row, 37, tag.ssTargetRank)
-            worksheet2.write(row, 38, tag.ssTargetRankLower)
-            worksheet2.write(row, 39, tag.ssTargetRankUpper)
-            worksheet2.write(row, 40, tag.units)
-            worksheet2.write(row, 41, tag.validityHighLimit)
-            worksheet2.write(row, 42, tag.validityLowLimit)
-        row += 1
+            cv_row += 1
+            worksheet2.write(cv_row, 0, tag.dmcTagName)
+            worksheet2.write(cv_row, 1, tag.measurementTag)
+            worksheet2.write(cv_row, 2, tag.description)
+            worksheet2.write(cv_row, 3, tag.dynamicHighLimitConcern)
+            worksheet2.write(cv_row, 4, tag.dynamicHighLimitZone)
+            worksheet2.write(cv_row, 5, tag.dynamicLowLimitConcern)
+            worksheet2.write(cv_row, 6, tag.dynamicLowLimitZone)
+            worksheet2.write(cv_row, 7, tag.dynamicTargetConcern)
+            worksheet2.write(cv_row, 8, tag.eceInEngineeringUnits)
+            worksheet2.write(cv_row, 9, tag.engineeringHighLimit)
+            worksheet2.write(cv_row, 10, tag.engineeringLowLimit)
+            worksheet2.write(cv_row, 11, tag.engineeringHighLimitJustification)
+            worksheet2.write(cv_row, 12, tag.engineeringLowLimitJustification)
+            worksheet2.write(cv_row, 13, tag.etParticipationSwitch)
+            worksheet2.write(cv_row, 14, tag.isCritical)
+            worksheet2.write(cv_row, 15, tag.lpCost)
+            worksheet2.write(cv_row, 16, tag.maximumImbalances)
+            worksheet2.write(cv_row, 17, tag.maximumSteadyStateCVStep)
+            worksheet2.write(cv_row, 18, tag.operatorHighLimit)
+            worksheet2.write(cv_row, 19, tag.operatorLowLimit)
+            worksheet2.write(cv_row, 20, tag.predErrorFilterHorizon)
+            worksheet2.write(cv_row, 21, tag.predErrorFilterLag)
+            worksheet2.write(cv_row, 22, tag.predErrorFilterType)
+            worksheet2.write(cv_row, 23, tag.rampHorizon)
+            worksheet2.write(cv_row, 24, tag.rampRate)
+            worksheet2.write(cv_row, 25, tag.rampSetpoint)
+            worksheet2.write(cv_row, 26, tag.rampControllerShedOption)
+            worksheet2.write(cv_row, 27, tag.rotationFactor)
+            worksheet2.write(cv_row, 28, tag.ssHighLimitConcern)
+            worksheet2.write(cv_row, 29, tag.ssHighLimitRank)
+            worksheet2.write(cv_row, 30, tag.ssHighLimitRankTypeQP)
+            worksheet2.write(cv_row, 31, tag.ssLowLimitConcern)
+            worksheet2.write(cv_row, 32, tag.ssLowLimitRank)
+            worksheet2.write(cv_row, 33, tag.ssLowLimitRankTypeQP)
+            worksheet2.write(cv_row, 34, tag.ssTargetConcern)
+            worksheet2.write(cv_row, 35, tag.ssTargetConcernLower)
+            worksheet2.write(cv_row, 36, tag.ssTargetConcernUpper)
+            worksheet2.write(cv_row, 37, tag.ssTargetRank)
+            worksheet2.write(cv_row, 38, tag.ssTargetRankLower)
+            worksheet2.write(cv_row, 39, tag.ssTargetRankUpper)
+            worksheet2.write(cv_row, 40, tag.units)
+            worksheet2.write(cv_row, 41, tag.validityHighLimit)
+            worksheet2.write(cv_row, 42, tag.validityLowLimit)
     workbook.close()
 
 
@@ -515,7 +519,7 @@ def write_CV_tags(tags, output_file):
                              'SSHighLimitRank': tag.ssHighLimitRank, 'SSHighLimitRankTypeQP': tag.ssHighLimitRankTypeQP, 'SSLowLimitConcern': tag.ssLowLimitConcern, 
                              'SSLowLimitRank': tag.ssLowLimitRank, 'SSLowLimitRankTypeQP': tag.ssLowLimitRankTypeQP, 'SSTargetConcern': tag.ssTargetConcern, 
                              'SSTargetConcernLower': tag.ssTargetConcernLower, 'SSTargetConcernUpper': tag.ssTargetConcernUpper, 'SSTargetRank': tag.ssTargetRank, 
-                             'SSTargetRankLower': tag.ssTargetRankLower, 'SSTargetRank, Upper': tag.ssTargetRankUpper, 'Units': tag.units, 'ValidityHighLimit': tag.validityHighLimit,
+                             'SSTargetRankLower': tag.ssTargetRankLower, 'SSTargetRankUpper': tag.ssTargetRankUpper, 'Units': tag.units, 'ValidityHighLimit': tag.validityHighLimit,
                              'ValidityLowLimit': tag.validityLowLimit})
 
 def write_MV_tags(tags, output_file):
