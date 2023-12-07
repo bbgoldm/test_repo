@@ -1,0 +1,541 @@
+"""
+Generate Tuning CSV
+
+Purpose:  This program will generate an MV and CV tuning CSV based on DMC CCF file
+
+Initial Release: 12/06/2023, Brent Goldman
+
+Quick Instructions:
+--  Generate a CCF file from DMC Builder and copy into same directory as this program.
+--  Run this application.  It will generate the TAGLIST_FILE (see CONSTANTS to rename).
+"""
+
+import os
+import csv
+import re
+import random
+
+# CONSTANTS
+# <<<<<User needs to modify these>>>>
+MV_TUNING_FILE =  'LDU_DMCTuning_MV.csv'                  # Program generated taglist file.  User should modify and save as FinalizedTagList.
+CV_TUNING_FILE =  'LDU_DMCTuning_CV.csv'                  # Program generated taglist file.  User should modify and save as FinalizedTagList.
+TUNING_FILE = 'LDU_DMCTuning.xlsx'                         # Program generated taglist file.  User should modify and save as FinalizedTagList.
+CCF_FILE = 'LDU_CCF.ccf'                            # CCF file from DMC Builder
+
+class CV_Object:
+    """Create MV / CV Object"""
+    def __init__(self, dmcTagName):
+        self.dmcTagName = str(dmcTagName)
+        self.measurementTag = None
+        self.description = None
+        self.dynamicHighLimitConcern = None
+        self.dynamicHighLimitZone = None
+        self.dynamicLowLimitConcern = None
+        self.dynamicLowLimitZone = None
+        self.dynamicTargetConcern = None
+        self.eceInEngineeringUnits = None
+        self.engineeringHighLimit = None
+        self.engineeringLowLimit = None
+        self.engineeringHighLimitJustification = None
+        self.engineeringLowLimitJustification = None
+        self.etParticipationSwitch = None
+        self.isCritical = None
+        self.lpCost = None
+        self.maximumImbalances = None
+        self.maximumSteadyStateCVStep = None
+        self.operatorHighLimit = None
+        self.operatorLowLimit = None
+        self.predErrorFilterHorizon = None
+        self.predErrorFilterLag = None
+        self.predErrorFilterType = None
+        self.rampHorizon = None
+        self.rampRate = None
+        self.rampSetpoint = None
+        self.rampControllerShedOption = None
+        self.rotationFactor = None
+        self.ssHighLimitConcern = None
+        self.ssHighLimitRank = None
+        self.ssHighLimitRankTypeQP = None
+        self.ssLowLimitConcern = None
+        self.ssLowLimitRank = None
+        self.ssLowLimitRankTypeQP = None
+        self.ssTargetConcern = None
+        self.ssTargetConcernLower = None
+        self.ssTargetConcernUpper = None
+        self.ssTargetRank = None
+        self.ssTargetRankLower = None
+        self.ssTargetRankUpper = None
+        self.units = None
+        self.validityHighLimit = None
+        self.validityLowLimit = None
+
+class MV_Object:
+    """Create MV / CV Object"""
+    def __init__(self, dmcTagName):
+        self.dmcTagName = str(dmcTagName)
+        self.measurementTag = None
+        self.costRank = None
+        self.description = None
+        self.dynamicMinimumMovement = None
+        self.engineeringHighLimit = None
+        self.engineeringHighLimitJustification = None
+        self.engineeringLowLimit = None
+        self.engineeringLowLimitJustification = None
+        self.etParticipationSwitch = None
+        self.lpCost = None
+        self.maximumMove = None
+        self.moveSuppression = None
+        self.operatorHighLimit = None
+        self.operatorLowLimit = None
+        self.ssMoveLimit = None
+        self.ssTargetConcern = None
+        self.ssTargetConcernLower = None
+        self.ssTargetConcernUpper = None
+        self.ssTargetRank = None
+        self.ssTargetRankLower = None
+        self.ssTargetRankUpper = None
+        self.steadyStateMinMovement = None
+        self.subcontrollerName = None
+        self.units = None
+        self.validityHighLimit = None
+        self.validityLowLimit = None
+
+
+# Functions
+def main():
+    """Entry point into code"""
+    print("Begin building taglist...")
+    MVobjectList, CVObjectList = build_objects(TUNING_FILE)  
+    print("Begin writing taglist to file...")
+    write_tags(MVobjectList, CV_TUNING_FILE)
+    write_tags(CVObjectList, MV_TUNING_FILE)
+    print(str(TUNING_FILE) + " file generated.")
+    print("All done!")
+
+def build_objects(output_file):
+    """Build MV and CV Objects"""
+    MVObjectList = []
+    CVObjectList = []
+    new_object = None  # MV Object
+    with open(CCF_FILE, 'r') as file:
+        for row in file:
+            row = row.strip()
+            if ('[IND:' in row):
+                dmcTagName = row.split(':')[1].replace("]","")
+                new_object = MV_Object(dmcTagName)
+                MVObjectList.append(new_object)
+            if ('[DEP:' in row):
+                dmcTagName = row.split(':')[1].replace("]","")
+                new_object = CV_Object(dmcTagName)
+                CVObjectList.append(new_object)
+            #-----------------------------------------------------
+            # CV Objects Parameters
+            #-----------------------------------------------------
+            # Description (Dep), DESCDEP
+            elif ('DESCDEP' in row):
+                new_object.description = row.split('~~~')[3]
+            # DynamicHighLimitConcern (Dep), ECECMU
+            elif ('ECECMU' in row):
+                new_object.dynamicHighLimitConcern = row.split('~~~')[3]
+            # DynamicHighLimitZone (Dep), TRANZU
+            elif ('TRANZU' in row):
+                new_object.dynamicHighLimitZone = row.split('~~~')[3]
+            # DynamicLowLimitConcern (Dep), ECECML
+            elif ('ECECML' in row):
+                new_object.dynamicLowLimitConcern = row.split('~~~')[3]
+            # DynamicLowLimitZone (Dep), TRANZL
+            elif ('TRANZL' in row):
+                new_object.dynamicLowLimitZone = row.split('~~~')[3]
+            # DynamicTargetConcern (Dep), ECECMM
+            elif ('ECECMM' in row):
+                new_object.dynamicTargetConcern = row.split('~~~')[3]
+            # ECEsInEngineeringUnits (Dep), XFRMECEC
+            elif ('XFRMECEC' in row):
+                new_object.eceInEngineeringUnits = row.split('~~~')[3]
+            # EngineeringHighLimit (Dep), UDPENG
+            elif ('UDPENG' in row):
+                new_object.engineeringHighLimit = row.split('~~~')[3]
+            # EngineeringLowLimit (Dep), LDPENG
+            elif ('LDPENG' in row):
+                new_object.engineeringLowLimit = row.split('~~~')[3]
+            # EngineeringHighLimitJustification (Dep), UDPENGJ
+            elif ('UDPENGJ' in row):
+                new_object.engineeringHighLimitJustification = row.split('~~~')[3]
+            # EngineeringLowLimitJustification (Dep), LDPENGJ
+            elif ('LDPENGJ' in row):
+                new_object.engineeringLowLimitJustification = row.split('~~~')[3]
+            # ETParticipationSwitch (Dep), ETCSWC
+            elif ('ETCSWC' in row):
+                new_object.etParticipationSwitch = row.split('~~~')[3]
+            # IsCritical (Dep), CRIDEP
+            elif ('CRIDEP' in row):
+                new_object.isCritical = row.split('~~~')[3]
+            # LPCost (Dep), CVCST
+            elif ('CVCST' in row):
+                new_object.lpCost = row.split('~~~')[3]
+            # MaximumImbalances (Dep), MXNIMB
+            elif ('MXNIMB' in row):
+                new_object.maximumImbalances = row.split('~~~')[3]
+            # MaximumSteadyStateCVStep (Dep), CVSTEP
+            elif ('CVSTEP' in row):
+                new_object.maximumSteadyStateCVStep = row.split('~~~')[3]
+            # OperatorHighLimit (Dep), UDEPTG
+            elif ('UDEPTG' in row):
+                new_object.operatorHighLimit = row.split('~~~')[3]
+            # OperatorLowLimit (Dep), LDEPTG
+            elif ('LDEPTG' in row):
+                new_object.operatorLowLimit = row.split('~~~')[3]
+            # PredErrorFilterHorizon (Dep), PRERHORIZ
+            elif ('PRERHORIZ' in row):
+                new_object.predErrorFilterHorizon = row.split('~~~')[3]
+            # PredErrorFilterLag (Dep), PRERTAU
+            elif ('PRERTAU' in row):
+                new_object.predErrorFilterLag = row.split('~~~')[3]
+            # PredErrorFilterType (Dep), PRERTYPE
+            elif ('PRERTYPE' in row):
+                new_object.predErrorFilterType = row.split('~~~')[3]
+            # RampHorizon (Dep)  not in DMCPlus
+            elif ('RAMP_HORIZON' in row):
+                new_object.rampHorizon = row.split('~~~')[3]
+            # RampRate (Dep), RAMPRT
+            elif ('RAMPRT' in row):
+                new_object.rampRate = row.split('~~~')[3]
+            # RampSetpoint (Dep), RAMPSP
+            elif ('RAMPSP' in row):
+                new_object.rampSetpoint = row.split('~~~')[3]
+            # RampControllerShedOption (Dep), RSHEDSUB
+            elif ('RSHEDSUB' in row):
+                new_object.rampControllerShedOption = row.split('~~~')[3]
+            # RotationFactor (Dep), ROTFAC
+            elif ('ROTFAC' in row):
+                new_object.rotationFactor = row.split('~~~')[3]
+            # SSHighLimitConcern (Dep), ECELPU
+            elif ('ECELPU' in row):
+                new_object.ssHighLimitConcern = row.split('~~~')[3]
+            # SSHighLimitRank (Dep), CVRANKU
+            elif ('CVRANKU' in row):
+                new_object.ssHighLimitRank = row.split('~~~')[3]
+            # SSHighLimitRankTypeQP (Dep), CVLPQU
+            elif ('CVLPQU' in row):
+                new_object.ssHighLimitRankTypeQP = row.split('~~~')[3]
+            # SSLowLimitConcern (Dep), ECELPL
+            elif ('ECELPL' in row):
+                new_object.ssLowLimitConcern = row.split('~~~')[3]
+            # SSLowLimitRank (Dep), CVRANKL
+            elif ('CVRANKL' in row):
+                new_object.ssLowLimitRank = row.split('~~~')[3]
+            # SSLowLimitRankTypeQP (Dep), CVLPQL
+            elif ('CVLPQL' in row):
+                new_object.ssLowLimitRankTypeQP = row.split('~~~')[3]
+            # SSTargetConcern (Dep), not in DMCPlus
+            elif ('SSTargetConcern' in row):
+                new_object.ssTargetConcern = row.split('~~~')[3]
+            # SSTargetConcernLower (Dep), ETCECEL
+            elif ('ETCECEL' in row):
+                new_object.ssTargetConcernLower = row.split('~~~')[3]
+            # SSTargetConcernUpper (Dep), ETCECEU
+            elif ('ETCECEU' in row):
+                new_object.ssTargetConcernUpper = row.split('~~~')[3]
+            # SSTargetRank (Dep), not in DMCPlus
+            elif ('SSTargetRank' in row):
+                new_object.ssTargetRank = row.split('~~~')[3]
+            # SSTargetRankLower (Dep), ETCRL
+            elif ('ETCRL' in row):
+                new_object.ssTargetRankLower = row.split('~~~')[3]
+            # SSTargerRankUpper (Dep), ETCRU
+            elif ('ETCRU' in row):
+                new_object.ssTargetRankUpper = row.split('~~~')[3]
+            # SubcontrollerName (Dep), CVINSB
+            elif ('CVINSB' in row):
+                new_object.subcontrollerName = row.split('~~~')[3]
+            # Units (Dep), ENGDEP
+            elif ('ENGDEP' in row):
+                new_object.units = row.split('~~~')[3]
+            # ValidityHighLimit (Dep), UVLDEP
+            elif ('UVLDEP' in row):
+                new_object.validityHighLimit = row.split('~~~')[3]
+            # ValidityLowLimit (Dep), LVLDEP
+            elif ('LVLDEP' in row):
+                new_object.validityLowLimit = row.split('~~~')[3]
+            #-----------------------------------------------------
+            # MV Objects Parameters
+            #-----------------------------------------------------
+            # CostRank (Ind), CSTRANK
+            elif ('CSTRANK' in row):
+                new_object.costRank = row.split('~~~')[3]
+            # Desription (Ind), DESCIND
+            elif ('DESCIND' in row):
+                new_object.description = row.split('~~~')[3]
+            # DynamicMinimumMovement (Ind), DMINMOV
+            elif ('DMINMOV' in row):
+                new_object.dynamicMinimumMovement = row.split('~~~')[3]
+            # EngineeringHighLimit (Ind), UMVENG
+            elif ('UMVENG' in row):
+                new_object.engineeringHighLimit = row.split('~~~')[3]
+            # EngineeringHighLimitJustification (Ind), UMVENGJ
+            elif ('UMVENGJ' in row):
+                new_object.engineeringHighLimitJustification = row.split('~~~')[3]
+            # EngineeringLowLimit (Ind), LMVENG
+            elif ('LMVENG' in row):
+                new_object.engineeringLowLimit = row.split('~~~')[3]
+            # EngineeringLowLimitJustification (Ind), MVENGJ
+            elif ('MVENGJ' in row):
+                new_object.engineeringLowLimitJustification = row.split('~~~')[3]
+            # ETParticipationSwitch (Ind), ETMSWC
+            elif ('ETMSWC' in row):
+                new_object.etParticipationSwitch = row.split('~~~')[3]
+            # LPCost (Ind), CST
+            elif ('CST' in row):
+                new_object.lpCost = row.split('~~~')[3]
+            # MaximumMove (Ind), MAXMOV
+            elif ('MAXMOV' in row):
+                new_object.maximumMove = row.split('~~~')[3]
+            # MoveSuppression (Ind), SUPMOV
+            elif ('SUPMOV' in row):
+                new_object.moveSuppression = row.split('~~~')[3]
+            # OperatorHighLimit (Ind), ULINDM
+            elif ('ULINDM' in row):
+                new_object.operatorHighLimit = row.split('~~~')[3]
+            # OperatorLowLimit (Ind), LLINDM
+            elif ('LLINDM' in row):
+                new_object.operatorLowLimit = row.split('~~~')[3]
+            # SSMoveLimit (ind), SSSTEP
+            elif ('SSSTEP' in row):
+                new_object.ssMoveLimit = row.split('~~~')[3]
+            # SSTargetConcern (Ind) -- not in dmcplus
+            elif ('SSTargetConcern' in row):
+                new_object.ssTargetConcern = row.split('~~~')[3]
+            # SSTargetConcernLower (Ind), ETMECEL
+            elif ('ETMECEL' in row):
+                new_object.ssTargetConcernLower = row.split('~~~')[3]
+            # SSTargetConcernUpper (Ind), ETMECEU
+            elif ('ETMECEU' in row):
+                new_object.ssTargetConcernUpper = row.split('~~~')[3]
+            # SSTargetRank -- not in dmcplus            
+            # SSTargetRankLower (Ind), ETMRL
+            elif ('ETMRL' in row):
+                new_object.ssTargetRankLower = row.split('~~~')[3]
+            # SSTargetRankUpper (ind), ETMRU
+            elif ('ETMRU' in row):
+                new_object.ssTargetRankUpper = row.split('~~~')[3]
+            # SteadyStateMinMovement (Ind), LPCRIT
+            elif ('LPCRIT' in row):
+                new_object.steadyStateMinMovement = row.split('~~~')[3]
+            # SubcontrollerName (Ind), MVINSB
+            elif ('MVINSB' in row):
+                new_object.subcontrollerName = row.split('~~~')[3]
+            # Units (Ind), ENGIND
+            elif ('ENGIND' in row):
+                new_object.units = row.split('~~~')[3]
+            # ValidityHighLimit (Ind), UVLIND
+            elif ('UVLIND' in row):
+                new_object.validityHighLimit = row.split('~~~')[3]
+            # ValidityLowLimit (ind), LVLIND
+            elif ('LVLIND' in row):
+                new_object.validityLowLimit = row.split('~~~')[3]
+
+    return MVObjectList, CVObjectList
+
+def write_tags_excel(tags, output_file):
+    """Write out MV and CV tags to Excel in different worksheets"""
+    # Write the tags to Excel
+    import xlsxwriter
+    workbook = xlsxwriter.Workbook(output_file)
+    worksheet1 = workbook.add_worksheet('MV')
+    worksheet2 = workbook.add_worksheet('CV')
+    worksheet1.write(0, 0, 'DMCTagName')
+    worksheet1.write(0, 1, 'MeasurementTag')
+    worksheet1.write(0, 2, 'CostRank')
+    worksheet1.write(0, 3, 'Description')
+    worksheet1.write(0, 4, 'DynamicMinimumMovement')
+    worksheet1.write(0, 5, 'EngineeringHighLimit')
+    worksheet1.write(0, 6, 'EngineeringHighLimitJustification')
+    worksheet1.write(0, 7, 'EngineeringLowLimit')
+    worksheet1.write(0, 8, 'EngineeringLowLimitJustification')
+    worksheet1.write(0, 9, 'ETParticipationSwitch')
+    worksheet1.write(0, 10, 'LPCost')
+    worksheet1.write(0, 11, 'MaximumMove')
+    worksheet1.write(0, 12, 'MoveSuppression')
+    worksheet1.write(0, 13, 'OperatorHighLimit')
+    worksheet1.write(0, 14, 'OperatorLowLimit')
+    worksheet1.write(0, 15, 'SSMoveLimit')
+    worksheet1.write(0, 16, 'SSTargetConcern')
+    worksheet1.write(0, 17, 'SSTargetConcernLower')
+    worksheet1.write(0, 18, 'SSTargetConcernUpper')
+    worksheet1.write(0, 19, 'SSTargetRank')
+    worksheet1.write(0, 20, 'SSTargetRankLower')
+    worksheet1.write(0, 21, 'SSTargetRankUpper')
+    worksheet1.write(0, 22, 'SteadyStateMinMovement')
+    worksheet1.write(0, 23, 'SubcontrollerName')
+    worksheet1.write(0, 24, 'Units')
+    worksheet1.write(0, 25, 'ValidityHighLimit')
+    worksheet1.write(0, 26, 'ValidityLowLimit')
+    worksheet2.write(0, 0, 'DMCTagName')
+    worksheet2.write(0, 1, 'MeasurementTag')
+    worksheet2.write(0, 2, 'Description')
+    worksheet2.write(0, 3, 'DynamicHighLimitConcern')
+    worksheet2.write(0, 4, 'DynamicHighLimitZone')
+    worksheet2.write(0, 5, 'DynamicLowLimitConcern')
+    worksheet2.write(0, 6, 'DynamicLowLimitZone')
+    worksheet2.write(0, 7, 'DynamicTargetConcern')
+    worksheet2.write(0, 8, 'ECEsInEngineeringUnits')
+    worksheet2.write(0, 9, 'EngineeringHighLimit')
+    worksheet2.write(0, 10, 'EngineeringLowLimit')
+    worksheet2.write(0, 11, 'EngineeringHighLimitJustification')
+    worksheet2.write(0, 12, 'EngineeringLowLimitJustification')
+    worksheet2.write(0, 13, 'ETParticipationSwitch')
+    worksheet2.write(0, 14, 'IsCritical')
+    worksheet2.write(0, 15, 'LPCost')
+    worksheet2.write(0, 16, 'MaximumImbalances')
+    worksheet2.write(0, 17, 'MaximumSteadyStateCVStep')
+    worksheet2.write(0, 18, 'OperatorHighLimit')
+    worksheet2.write(0, 19, 'OperatorLowLimit')
+    worksheet2.write(0, 20, 'PredErrorFilterHorizon')
+    worksheet2.write(0, 21, 'PredErrorFilterLag')
+    worksheet2.write(0, 22, 'PredErrorFilterType')
+    worksheet2.write(0, 23, 'RampHorizon')
+    worksheet2.write(0, 24, 'RampRate')
+    worksheet2.write(0, 25, 'RampSetpoint')
+    worksheet2.write(0, 26, 'RampControllerShedOption')
+    worksheet2.write(0, 27, 'RotationFactor')
+    worksheet2.write(0, 28, 'SSHighLimitConcern')
+    worksheet2.write(0, 29, 'SSHighLimitRank')
+    worksheet2.write(0, 30, 'SSHighLimitRankTypeQP')
+    worksheet2.write(0, 31, 'SSLowLimitConcern')
+    worksheet2.write(0, 32, 'SSLowLimitRank')
+    worksheet2.write(0, 33, 'SSLowLimitRankTypeQP')
+    worksheet2.write(0, 34, 'SSTargetConcern')
+    worksheet2.write(0, 35, 'SSTargetConcernLower')
+    worksheet2.write(0, 36, 'SSTargetConcernUpper')
+    worksheet2.write(0, 37, 'SSTargetRank')
+    worksheet2.write(0, 38, 'SSTargetRankLower')
+    worksheet2.write(0, 39, 'SSTargetRankUpper')
+    worksheet2.write(0, 40, 'Units')
+    worksheet2.write(0, 41, 'ValidityHighLimit')
+    worksheet2.write(0, 42, 'ValidityLowLimit')
+    row = 1
+    for tag in tags:
+        if isinstance(tag, MV_Object):
+            worksheet1.write(row, 0, tag.dmcTagName)
+            worksheet1.write(row, 1, tag.measurementTag)
+            worksheet1.write(row, 2, tag.costRank)
+            worksheet1.write(row, 3, tag.description)
+            worksheet1.write(row, 4, tag.dynamicMinimumMovement)
+            worksheet1.write(row, 5, tag.engineeringHighLimit)
+            worksheet1.write(row, 6, tag.engineeringHighLimitJustification)
+            worksheet1.write(row, 7, tag.engineeringLowLimit)
+            worksheet1.write(row, 8, tag.engineeringLowLimitJustification)
+            worksheet1.write(row, 9, tag.etParticipationSwitch)
+            worksheet1.write(row, 10, tag.lpCost)
+            worksheet1.write(row, 11, tag.maximumMove)
+            worksheet1.write(row, 12, tag.moveSuppression)
+            worksheet1.write(row, 13, tag.operatorHighLimit)
+            worksheet1.write(row, 14, tag.operatorLowLimit)
+            worksheet1.write(row, 15, tag.ssMoveLimit)
+            worksheet1.write(row, 16, tag.ssTargetConcern)
+            worksheet1.write(row, 17, tag.ssTargetConcernLower)
+            worksheet1.write(row, 18, tag.ssTargetConcernUpper)
+            worksheet1.write(row, 19, tag.ssTargetRank)
+            worksheet1.write(row, 20, tag.ssTargetRankLower)
+            worksheet1.write(row, 21, tag.ssTargetRankUpper)
+            worksheet1.write(row, 22, tag.steadyStateMinMovement)
+            worksheet1.write(row, 23, tag.subcontrollerName)
+            worksheet1.write(row, 24, tag.units)
+            worksheet1.write(row, 25, tag.validityHighLimit)
+            worksheet1.write(row, 26, tag.validityLowLimit)
+        elif isinstance(tag, CV_Object):
+            worksheet2.write(row, 0, tag.dmcTagName)
+            worksheet2.write(row, 1, tag.measurementTag)
+            worksheet2.write(row, 2, tag.description)
+            worksheet2.write(row, 3, tag.dynamicHighLimitConcern)
+            worksheet2.write(row, 4, tag.dynamicHighLimitZone)
+            worksheet2.write(row, 5, tag.dynamicLowLimitConcern)
+            worksheet2.write(row, 6, tag.dynamicLowLimitZone)
+            worksheet2.write(row, 7, tag.dynamicTargetConcern)
+            worksheet2.write(row, 8, tag.eceInEngineeringUnits)
+            worksheet2.write(row, 9, tag.engineeringHighLimit)
+            worksheet2.write(row, 10, tag.engineeringLowLimit)
+            worksheet2.write(row, 11, tag.engineeringHighLimitJustification)
+            worksheet2.write(row, 12, tag.engineeringLowLimitJustification)
+            worksheet2.write(row, 13, tag.etParticipationSwitch)
+            worksheet2.write(row, 14, tag.isCritical)
+            worksheet2.write(row, 15, tag.lpCost)
+            worksheet2.write(row, 16, tag.maximumImbalances)
+            worksheet2.write(row, 17, tag.maximumSteadyStateCVStep)
+            worksheet2.write(row, 18, tag.operatorHighLimit)
+            worksheet2.write(row, 19, tag.operatorLowLimit)
+            worksheet2.write(row, 20, tag.predErrorFilterHorizon)
+            worksheet2.write(row, 21, tag.predErrorFilterLag)
+            worksheet2.write(row, 22, tag.predErrorFilterType)
+            worksheet2.write(row, 23, tag.rampHorizon)
+            worksheet2.write(row, 24, tag.rampRate)
+            worksheet2.write(row, 25, tag.rampSetpoint)
+            worksheet2.write(row, 26, tag.rampControllerShedOption)
+            worksheet2.write(row, 27, tag.rotationFactor)
+            worksheet2.write(row, 28, tag.ssHighLimitConcern)
+            worksheet2.write(row, 29, tag.ssHighLimitRank)
+            worksheet2.write(row, 30, tag.ssHighLimitRankTypeQP)
+            worksheet2.write(row, 31, tag.ssLowLimitConcern)
+            worksheet2.write(row, 32, tag.ssLowLimitRank)
+            worksheet2.write(row, 33, tag.ssLowLimitRankTypeQP)
+            worksheet2.write(row, 34, tag.ssTargetConcern)
+            worksheet2.write(row, 35, tag.ssTargetConcernLower)
+            worksheet2.write(row, 36, tag.ssTargetConcernUpper)
+            worksheet2.write(row, 37, tag.ssTargetRank)
+            worksheet2.write(row, 38, tag.ssTargetRankLower)
+            worksheet2.write(row, 39, tag.ssTargetRankUpper)
+            worksheet2.write(row, 40, tag.units)
+            worksheet2.write(row, 41, tag.validityHighLimit)
+            worksheet2.write(row, 42, tag.validityLowLimit)
+        row += 1
+    workbook.close()
+
+
+def write_CV_tags(tags, output_file):
+    # Write the tags to CSV
+    with open(output_file, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['DMCTagName', 'MeasurementTag', 'Description', 'DynamicHighLimitConcern', 'DynamicHighLimitZone', 'DynamicLowLimitConcern', 'DynamicLowLimitZone',
+                                                  'DynamicTargetConcern', 'ECEsInEngineeringUnits', 'EngineeringHighLimit', 'EngineeringLowLimit', 'EngineeringHighLimitJustification', 
+                                                  'EngineeringLowLimitJustification', 'ETParticipationSwitch', 'IsCritical', 'LPCost', 'MaximumImbalances', 'MaximumSteadyStateCVStep', 
+                                                  'OperatorHighLimit', 'OperatorLowLimit', 'PredErrorFilterHorizon', 'PredErrorFilterLag', 'PredErrorFilterType', 'RampHorizon', 
+                                                  'RampRate', 'RampSetpoint', 'RampControllerShedOption', 'RotationFactor', 'SSHighLimitConcern', 'SSHighLimitRank', 'SSHighLimitRankTypeQP', 
+                                                  'SSLowLimitConcern', 'SSLowLimitRank', 'SSLowLimitRankTypeQP', 'SSTargetConcern', 'SSTargetConcernLower', 'SSTargetConcernUpper', 
+                                                  'SSTargetRank', 'SSTargetRankLower', 'SSTargetRankUpper', 'Units', 'ValidityHighLimit', 'ValidityLowLimit'])
+        writer.writeheader()
+        for tag in tags:
+            writer.writerow({'DMCTagName': tag.dmcTagName, 'MeasurementTag': tag.measurementTag, 'Description': tag.description, 'DynamicHighLimitConcern': tag.dynamicHighLimitConcern, 
+                             'DynamicHighLimitZone': tag.dynamicHighLimitZone, 'DynamicLowLimitConcern': tag.dynamicLowLimitConcern, 'DynamicLowLimitZone': tag.dynamicLowLimitZone, 
+                             'DynamicTargetConcern': tag.dynamicTargetConcern, 'ECEsInEngineeringUnits': tag.eceInEngineeringUnits, 'EngineeringHighLimit': tag.engineeringHighLimit, 
+                             'EngineeringLowLimit': tag.engineeringLowLimit, 'EngineeringHighLimitJustification': tag.engineeringHighLimitJustification, 
+                             'EngineeringLowLimitJustification': tag.engineeringLowLimitJustification, 'ETParticipationSwitch': tag.etParticipationSwitch, 'IsCritical': tag.isCritical, 
+                             'LPCost': tag.lpCost, 'MaximumImbalances': tag.maximumImbalances, 'MaximumSteadyStateCVStep': tag.maximumSteadyStateCVStep, 'OperatorHighLimit': tag.operatorHighLimit, 
+                             'OperatorLowLimit': tag.operatorLowLimit, 'PredErrorFilterHorizon': tag.predErrorFilterHorizon, 'PredErrorFilterLag': tag.predErrorFilterLag, 
+                             'PredErrorFilterType': tag.predErrorFilterType, 'RampHorizon': tag.rampHorizon, 'RampRate': tag.rampRate, 'RampSetpoint': tag.rampSetpoint, 
+                             'RampControllerShedOption': tag.rampControllerShedOption, 'RotationFactor': tag.rotationFactor, 'SSHighLimitConcern': tag.ssHighLimitConcern, 
+                             'SSHighLimitRank': tag.ssHighLimitRank, 'SSHighLimitRankTypeQP': tag.ssHighLimitRankTypeQP, 'SSLowLimitConcern': tag.ssLowLimitConcern, 
+                             'SSLowLimitRank': tag.ssLowLimitRank, 'SSLowLimitRankTypeQP': tag.ssLowLimitRankTypeQP, 'SSTargetConcern': tag.ssTargetConcern, 
+                             'SSTargetConcernLower': tag.ssTargetConcernLower, 'SSTargetConcernUpper': tag.ssTargetConcernUpper, 'SSTargetRank': tag.ssTargetRank, 
+                             'SSTargetRankLower': tag.ssTargetRankLower, 'SSTargetRank, Upper': tag.ssTargetRankUpper, 'Units': tag.units, 'ValidityHighLimit': tag.validityHighLimit,
+                             'ValidityLowLimit': tag.validityLowLimit})
+
+def write_MV_tags(tags, output_file):
+    # Write the tags to CSV
+    with open(output_file, 'w', newline='') as file:
+        writer = csv.DictWriter(file, fieldnames=['DMCTagName', 'MeasurementTag', 'CostRank', 'Description', 'DynamicMinimumMovement', 'EngineeringHighLimit', 'EngineeringHighLimitJustification',
+                                                  'EngineeringLowLimit', 'EngineeringLowLimitJustification', 'ETParticipationSwitch', 'LPCost', 'MaximumMove', 'MoveSuppression', 
+                                                  'OperatorHighLimit', 'OperatorLowLimit', 'SSMoveLimit', 'SSTargetConcern', 'SSTargetConcernLower', 'SSTargetConcernUpper', 
+                                                  'SSTargetRank', 'SSTargetRankLower', 'SSTargetRankUpper', 'SteadyStateMinMovement', 'SubcontrollerName', 'Units', 'ValidityHighLimit', 
+                                                  'ValidityLowLimit'])
+        writer.writeheader()
+        for tag in tags:
+            writer.writerow({'DMCTagName': tag.dmcTagName, 'MeasurementTag': tag.measurementTag, 'CostRank': tag.costRank, 'Description': tag.description, 
+                             'DynamicMinimumMovement': tag.dynamicMinimumMovement, 'EngineeringHighLimit': tag.engineeringHighLimit, 
+                             'EngineeringHighLimitJustification': tag.engineeringHighLimitJustification, 'EngineeringLowLimit': tag.engineeringLowLimit, 
+                             'EngineeringLowLimitJustification': tag.engineeringLowLimitJustification, 'ETParticipationSwitch': tag.etParticipationSwitch, 'LPCost': tag.lpCost, 
+                             'MaximumMove': tag.maximumMove, 'MoveSuppression': tag.moveSuppression, 'OperatorHighLimit': tag.operatorHighLimit, 'OperatorLowLimit': tag.operatorLowLimit, 
+                             'SSMoveLimit': tag.ssMoveLimit, 'SSTargetConcern': tag.ssTargetConcern, 'SSTargetConcernLower': tag.ssTargetConcernLower, 'SSTargetConcernUpper': tag.ssTargetConcernUpper, 
+                             'SSTargetRank': tag.ssTargetRank, 'SSTargetRankLower': tag.ssTargetRankLower, 'SSTargetRankUpper': tag.ssTargetRankUpper, 'SteadyStateMinMovement': tag.steadyStateMinMovement, 
+                             'SubcontrollerName': tag.subcontrollerName, 'Units': tag.units, 'ValidityHighLimit': tag.validityHighLimit, 'ValidityLowLimit': tag.validityLowLimit})
+
+if __name__ == '__main__':
+     main()
