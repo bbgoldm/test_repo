@@ -17,8 +17,6 @@ import random
 
 # CONSTANTS
 # <<<<<User needs to modify these>>>>
-MV_TUNING_FILE =  'LDU_DMCTuning_MV.csv'                  # Program generated taglist file.  User should modify and save as FinalizedTagList.
-CV_TUNING_FILE =  'LDU_DMCTuning_CV.csv'                  # Program generated taglist file.  User should modify and save as FinalizedTagList.
 TUNING_FILE = 'LDU_DMCTuning.xlsx'                         # Program generated taglist file.  User should modify and save as FinalizedTagList.
 CCF_FILE = 'LDU_CCF.ccf'                            # CCF file from DMC Builder
 
@@ -65,7 +63,9 @@ class CV_Object:
         self.ssTargetRank = None
         self.ssTargetRankLower = None
         self.ssTargetRankUpper = None
+        self.subcontrollerName = None
         self.units = None
+        self.utag = None
         self.validityHighLimit = None
         self.validityLowLimit = None
 
@@ -97,9 +97,9 @@ class MV_Object:
         self.steadyStateMinMovement = None
         self.subcontrollerName = None
         self.units = None
+        self.utag = None
         self.validityHighLimit = None
         self.validityLowLimit = None
-
 
 # Functions
 def main():
@@ -107,8 +107,6 @@ def main():
     print("Begin building taglist...")
     MVobjectList, CVObjectList = build_objects(TUNING_FILE)  
     print("Begin writing taglist to file...")
-    write_MV_tags(MVobjectList, CV_TUNING_FILE)
-    write_CV_tags(CVObjectList, MV_TUNING_FILE)
     FullObjectList = MVobjectList + CVObjectList
     write_tags_excel(FullObjectList, TUNING_FILE)
     print(str(TUNING_FILE) + " file generated.")
@@ -335,6 +333,27 @@ def build_objects(output_file):
             # ValidityLowLimit (ind), LVLIND
             elif ('.LVLIND~' in row):
                 new_object.validityLowLimit = row.split('~~~')[3]
+            # -------------------------------------------
+            # Other Parameters
+            # -------------------------------------------
+            # Utag
+            if ".INDSTA~" in row or ".UDEPTG~" in row:
+                # Utag encountered
+                double_colon_index = row.find('::')
+                period_index = row.find('.', double_colon_index)
+                quote_index = row.find('"')
+                utag = row[double_colon_index + 3:period_index].strip()
+                new_object.utag = utag
+            # MeasurementTag (Ind)
+            if ('.VIND~' in row or '.AUGCOP~' in row):
+                tag_parameter = re.findall(r'::"([^"]+)"',row)
+                if len(tag_parameter) > 0:
+                    new_object.measurementTag = tag_parameter[0]
+            # MeasurementTag (Dep)
+            if ('.DEP~' in row):
+                tag_parameter = re.findall(r'::"([^"]+)"',row)
+                if len(tag_parameter) > 0:
+                    new_object.measurementTag = tag_parameter[0]
 
     return MVObjectList, CVObjectList
 
@@ -345,201 +364,162 @@ def write_tags_excel(tags, output_file):
     workbook = xlsxwriter.Workbook(output_file)
     worksheet1 = workbook.add_worksheet('MV')
     worksheet2 = workbook.add_worksheet('CV')
+    # MV Parameters
     worksheet1.write(0, 0, 'DMCTagName')
-    worksheet1.write(0, 1, 'MeasurementTag')
-    worksheet1.write(0, 2, 'CostRank')
-    worksheet1.write(0, 3, 'Description')
-    worksheet1.write(0, 4, 'DynamicMinimumMovement')
-    worksheet1.write(0, 5, 'EngineeringHighLimit')
-    worksheet1.write(0, 6, 'EngineeringHighLimitJustification')
-    worksheet1.write(0, 7, 'EngineeringLowLimit')
-    worksheet1.write(0, 8, 'EngineeringLowLimitJustification')
-    worksheet1.write(0, 9, 'ETParticipationSwitch')
-    worksheet1.write(0, 10, 'LPCost')
-    worksheet1.write(0, 11, 'MaximumMove')
-    worksheet1.write(0, 12, 'MoveSuppression')
-    worksheet1.write(0, 13, 'OperatorHighLimit')
-    worksheet1.write(0, 14, 'OperatorLowLimit')
-    worksheet1.write(0, 15, 'SSMoveLimit')
-    worksheet1.write(0, 16, 'SSTargetConcern')
-    worksheet1.write(0, 17, 'SSTargetConcernLower')
-    worksheet1.write(0, 18, 'SSTargetConcernUpper')
-    worksheet1.write(0, 19, 'SSTargetRank')
-    worksheet1.write(0, 20, 'SSTargetRankLower')
-    worksheet1.write(0, 21, 'SSTargetRankUpper')
-    worksheet1.write(0, 22, 'SteadyStateMinMovement')
-    worksheet1.write(0, 23, 'SubcontrollerName')
-    worksheet1.write(0, 24, 'Units')
-    worksheet1.write(0, 25, 'ValidityHighLimit')
-    worksheet1.write(0, 26, 'ValidityLowLimit')
+    worksheet1.write(0, 1, 'Description')
+    worksheet1.write(0, 2, 'Units')
+    worksheet1.write(0, 3, 'MeasurementTag')
+    worksheet1.write(0, 4, 'Utag')
+    worksheet1.write(0, 5, 'CostRank')
+    worksheet1.write(0, 6, 'DynamicMinimumMovement')
+    worksheet1.write(0, 7, 'EngineeringHighLimit')
+    worksheet1.write(0, 8, 'EngineeringHighLimitJustification')
+    worksheet1.write(0, 9, 'EngineeringLowLimit')
+    worksheet1.write(0, 10, 'EngineeringLowLimitJustification')
+    worksheet1.write(0, 11, 'ETParticipationSwitch')
+    worksheet1.write(0, 12, 'LPCost')
+    worksheet1.write(0, 13, 'MaximumMove')
+    worksheet1.write(0, 14, 'MoveSuppression')
+    worksheet1.write(0, 15, 'OperatorHighLimit')
+    worksheet1.write(0, 16, 'OperatorLowLimit')
+    worksheet1.write(0, 17, 'SSMoveLimit')
+    worksheet1.write(0, 18, 'SSTargetConcern')
+    worksheet1.write(0, 19, 'SSTargetConcernLower')
+    worksheet1.write(0, 20, 'SSTargetConcernUpper')
+    worksheet1.write(0, 21, 'SSTargetRank')
+    worksheet1.write(0, 22, 'SSTargetRankLower')
+    worksheet1.write(0, 23, 'SSTargetRankUpper')
+    worksheet1.write(0, 24, 'SteadyStateMinMovement')
+    worksheet1.write(0, 25, 'SubcontrollerName')
+    worksheet1.write(0, 26, 'ValidityHighLimit')
+    worksheet1.write(0, 27, 'ValidityLowLimit')
+    # CV Parameters
     worksheet2.write(0, 0, 'DMCTagName')
-    worksheet2.write(0, 1, 'MeasurementTag')
-    worksheet2.write(0, 2, 'Description')
-    worksheet2.write(0, 3, 'DynamicHighLimitConcern')
-    worksheet2.write(0, 4, 'DynamicHighLimitZone')
-    worksheet2.write(0, 5, 'DynamicLowLimitConcern')
-    worksheet2.write(0, 6, 'DynamicLowLimitZone')
-    worksheet2.write(0, 7, 'DynamicTargetConcern')
-    worksheet2.write(0, 8, 'ECEsInEngineeringUnits')
-    worksheet2.write(0, 9, 'EngineeringHighLimit')
-    worksheet2.write(0, 10, 'EngineeringLowLimit')
-    worksheet2.write(0, 11, 'EngineeringHighLimitJustification')
-    worksheet2.write(0, 12, 'EngineeringLowLimitJustification')
-    worksheet2.write(0, 13, 'ETParticipationSwitch')
-    worksheet2.write(0, 14, 'IsCritical')
-    worksheet2.write(0, 15, 'LPCost')
-    worksheet2.write(0, 16, 'MaximumImbalances')
-    worksheet2.write(0, 17, 'MaximumSteadyStateCVStep')
-    worksheet2.write(0, 18, 'OperatorHighLimit')
-    worksheet2.write(0, 19, 'OperatorLowLimit')
-    worksheet2.write(0, 20, 'PredErrorFilterHorizon')
-    worksheet2.write(0, 21, 'PredErrorFilterLag')
-    worksheet2.write(0, 22, 'PredErrorFilterType')
-    worksheet2.write(0, 23, 'RampHorizon')
-    worksheet2.write(0, 24, 'RampRate')
-    worksheet2.write(0, 25, 'RampSetpoint')
-    worksheet2.write(0, 26, 'RampControllerShedOption')
-    worksheet2.write(0, 27, 'RotationFactor')
-    worksheet2.write(0, 28, 'SSHighLimitConcern')
-    worksheet2.write(0, 29, 'SSHighLimitRank')
-    worksheet2.write(0, 30, 'SSHighLimitRankTypeQP')
-    worksheet2.write(0, 31, 'SSLowLimitConcern')
-    worksheet2.write(0, 32, 'SSLowLimitRank')
-    worksheet2.write(0, 33, 'SSLowLimitRankTypeQP')
-    worksheet2.write(0, 34, 'SSTargetConcern')
-    worksheet2.write(0, 35, 'SSTargetConcernLower')
-    worksheet2.write(0, 36, 'SSTargetConcernUpper')
-    worksheet2.write(0, 37, 'SSTargetRank')
-    worksheet2.write(0, 38, 'SSTargetRankLower')
-    worksheet2.write(0, 39, 'SSTargetRankUpper')
-    worksheet2.write(0, 40, 'Units')
-    worksheet2.write(0, 41, 'ValidityHighLimit')
-    worksheet2.write(0, 42, 'ValidityLowLimit')
+    worksheet2.write(0, 1, 'Description')
+    worksheet2.write(0, 2, 'Units')
+    worksheet2.write(0, 3, 'MeasurementTag')
+    worksheet2.write(0, 4, 'UTag')
+    worksheet2.write(0, 5, 'DynamicHighLimitConcern')
+    worksheet2.write(0, 6, 'DynamicHighLimitZone')
+    worksheet2.write(0, 7, 'DynamicLowLimitConcern')
+    worksheet2.write(0, 8, 'DynamicLowLimitZone')
+    worksheet2.write(0, 9, 'DynamicTargetConcern')
+    worksheet2.write(0, 10, 'ECEsInEngineeringUnits')
+    worksheet2.write(0, 11, 'EngineeringHighLimit')
+    worksheet2.write(0, 12, 'EngineeringLowLimit')
+    worksheet2.write(0, 13, 'EngineeringHighLimitJustification')
+    worksheet2.write(0, 14, 'EngineeringLowLimitJustification')
+    worksheet2.write(0, 15, 'ETParticipationSwitch')
+    worksheet2.write(0, 16, 'IsCritical')
+    worksheet2.write(0, 17, 'LPCost')
+    worksheet2.write(0, 18, 'MaximumImbalances')
+    worksheet2.write(0, 19, 'MaximumSteadyStateCVStep')
+    worksheet2.write(0, 20, 'OperatorHighLimit')
+    worksheet2.write(0, 21, 'OperatorLowLimit')
+    worksheet2.write(0, 22, 'PredErrorFilterHorizon')
+    worksheet2.write(0, 23, 'PredErrorFilterLag')
+    worksheet2.write(0, 24, 'PredErrorFilterType')
+    worksheet2.write(0, 25, 'RampHorizon')
+    worksheet2.write(0, 26, 'RampRate')
+    worksheet2.write(0, 27, 'RampSetpoint')
+    worksheet2.write(0, 28, 'RampControllerShedOption')
+    worksheet2.write(0, 29, 'RotationFactor')
+    worksheet2.write(0, 30, 'SSHighLimitConcern')
+    worksheet2.write(0, 31, 'SSHighLimitRank')
+    worksheet2.write(0, 32, 'SSHighLimitRankTypeQP')
+    worksheet2.write(0, 33, 'SSLowLimitConcern')
+    worksheet2.write(0, 34, 'SSLowLimitRank')
+    worksheet2.write(0, 35, 'SSLowLimitRankTypeQP')
+    worksheet2.write(0, 36, 'SSTargetConcern')
+    worksheet2.write(0, 37, 'SSTargetConcernLower')
+    worksheet2.write(0, 38, 'SSTargetConcernUpper')
+    worksheet2.write(0, 39, 'SSTargetRank')
+    worksheet2.write(0, 40, 'SSTargetRankLower')
+    worksheet2.write(0, 41, 'SSTargetRankUpper')
+    worksheet2.write(0, 42, 'SubcontrollerName')
+    worksheet2.write(0, 43, 'ValidityHighLimit')
+    worksheet2.write(0, 44, 'ValidityLowLimit')
     mv_row = 0
     cv_row = 0
     for tag in tags:
         if isinstance(tag, MV_Object):
             mv_row += 1
             worksheet1.write(mv_row, 0, tag.dmcTagName)
-            worksheet1.write(mv_row, 1, tag.measurementTag)
-            worksheet1.write(mv_row, 2, tag.costRank)
-            worksheet1.write(mv_row, 3, tag.description)
-            worksheet1.write(mv_row, 4, tag.dynamicMinimumMovement)
-            worksheet1.write(mv_row, 5, tag.engineeringHighLimit)
-            worksheet1.write(mv_row, 6, tag.engineeringHighLimitJustification)
-            worksheet1.write(mv_row, 7, tag.engineeringLowLimit)
-            worksheet1.write(mv_row, 8, tag.engineeringLowLimitJustification)
-            worksheet1.write(mv_row, 9, tag.etParticipationSwitch)
-            worksheet1.write(mv_row, 10, tag.lpCost)
-            worksheet1.write(mv_row, 11, tag.maximumMove)
-            worksheet1.write(mv_row, 12, tag.moveSuppression)
-            worksheet1.write(mv_row, 13, tag.operatorHighLimit)
-            worksheet1.write(mv_row, 14, tag.operatorLowLimit)
-            worksheet1.write(mv_row, 15, tag.ssMoveLimit)
-            worksheet1.write(mv_row, 16, tag.ssTargetConcern)
-            worksheet1.write(mv_row, 17, tag.ssTargetConcernLower)
-            worksheet1.write(mv_row, 18, tag.ssTargetConcernUpper)
-            worksheet1.write(mv_row, 19, tag.ssTargetRank)
-            worksheet1.write(mv_row, 20, tag.ssTargetRankLower)
-            worksheet1.write(mv_row, 21, tag.ssTargetRankUpper)
-            worksheet1.write(mv_row, 22, tag.steadyStateMinMovement)
-            worksheet1.write(mv_row, 23, tag.subcontrollerName)
-            worksheet1.write(mv_row, 24, tag.units)
-            worksheet1.write(mv_row, 25, tag.validityHighLimit)
-            worksheet1.write(mv_row, 26, tag.validityLowLimit)
+            worksheet1.write(mv_row, 1, tag.description)
+            worksheet1.write(mv_row, 2, tag.units)
+            worksheet1.write(mv_row, 3, tag.measurementTag)
+            worksheet1.write(mv_row, 4, tag.utag)
+            worksheet1.write(mv_row, 5, tag.costRank)
+            worksheet1.write(mv_row, 6, tag.dynamicMinimumMovement)
+            worksheet1.write(mv_row, 7, tag.engineeringHighLimit)
+            worksheet1.write(mv_row, 8, tag.engineeringHighLimitJustification)
+            worksheet1.write(mv_row, 9, tag.engineeringLowLimit)
+            worksheet1.write(mv_row, 10, tag.engineeringLowLimitJustification)
+            worksheet1.write(mv_row, 11, tag.etParticipationSwitch)
+            worksheet1.write(mv_row, 12, tag.lpCost)
+            worksheet1.write(mv_row, 13, tag.maximumMove)
+            worksheet1.write(mv_row, 14, tag.moveSuppression)
+            worksheet1.write(mv_row, 15, tag.operatorHighLimit)
+            worksheet1.write(mv_row, 16, tag.operatorLowLimit)
+            worksheet1.write(mv_row, 17, tag.ssMoveLimit)
+            worksheet1.write(mv_row, 18, tag.ssTargetConcern)
+            worksheet1.write(mv_row, 19, tag.ssTargetConcernLower)
+            worksheet1.write(mv_row, 20, tag.ssTargetConcernUpper)
+            worksheet1.write(mv_row, 21, tag.ssTargetRank)
+            worksheet1.write(mv_row, 22, tag.ssTargetRankLower)
+            worksheet1.write(mv_row, 23, tag.ssTargetRankUpper)
+            worksheet1.write(mv_row, 24, tag.steadyStateMinMovement)
+            worksheet1.write(mv_row, 25, tag.subcontrollerName)
+            worksheet1.write(mv_row, 26, tag.validityHighLimit)
+            worksheet1.write(mv_row, 27, tag.validityLowLimit)
         elif isinstance(tag, CV_Object):
             cv_row += 1
             worksheet2.write(cv_row, 0, tag.dmcTagName)
-            worksheet2.write(cv_row, 1, tag.measurementTag)
-            worksheet2.write(cv_row, 2, tag.description)
-            worksheet2.write(cv_row, 3, tag.dynamicHighLimitConcern)
-            worksheet2.write(cv_row, 4, tag.dynamicHighLimitZone)
-            worksheet2.write(cv_row, 5, tag.dynamicLowLimitConcern)
-            worksheet2.write(cv_row, 6, tag.dynamicLowLimitZone)
-            worksheet2.write(cv_row, 7, tag.dynamicTargetConcern)
-            worksheet2.write(cv_row, 8, tag.eceInEngineeringUnits)
-            worksheet2.write(cv_row, 9, tag.engineeringHighLimit)
-            worksheet2.write(cv_row, 10, tag.engineeringLowLimit)
-            worksheet2.write(cv_row, 11, tag.engineeringHighLimitJustification)
-            worksheet2.write(cv_row, 12, tag.engineeringLowLimitJustification)
-            worksheet2.write(cv_row, 13, tag.etParticipationSwitch)
-            worksheet2.write(cv_row, 14, tag.isCritical)
-            worksheet2.write(cv_row, 15, tag.lpCost)
-            worksheet2.write(cv_row, 16, tag.maximumImbalances)
-            worksheet2.write(cv_row, 17, tag.maximumSteadyStateCVStep)
-            worksheet2.write(cv_row, 18, tag.operatorHighLimit)
-            worksheet2.write(cv_row, 19, tag.operatorLowLimit)
-            worksheet2.write(cv_row, 20, tag.predErrorFilterHorizon)
-            worksheet2.write(cv_row, 21, tag.predErrorFilterLag)
-            worksheet2.write(cv_row, 22, tag.predErrorFilterType)
-            worksheet2.write(cv_row, 23, tag.rampHorizon)
-            worksheet2.write(cv_row, 24, tag.rampRate)
-            worksheet2.write(cv_row, 25, tag.rampSetpoint)
-            worksheet2.write(cv_row, 26, tag.rampControllerShedOption)
-            worksheet2.write(cv_row, 27, tag.rotationFactor)
-            worksheet2.write(cv_row, 28, tag.ssHighLimitConcern)
-            worksheet2.write(cv_row, 29, tag.ssHighLimitRank)
-            worksheet2.write(cv_row, 30, tag.ssHighLimitRankTypeQP)
-            worksheet2.write(cv_row, 31, tag.ssLowLimitConcern)
-            worksheet2.write(cv_row, 32, tag.ssLowLimitRank)
-            worksheet2.write(cv_row, 33, tag.ssLowLimitRankTypeQP)
-            worksheet2.write(cv_row, 34, tag.ssTargetConcern)
-            worksheet2.write(cv_row, 35, tag.ssTargetConcernLower)
-            worksheet2.write(cv_row, 36, tag.ssTargetConcernUpper)
-            worksheet2.write(cv_row, 37, tag.ssTargetRank)
-            worksheet2.write(cv_row, 38, tag.ssTargetRankLower)
-            worksheet2.write(cv_row, 39, tag.ssTargetRankUpper)
-            worksheet2.write(cv_row, 40, tag.units)
-            worksheet2.write(cv_row, 41, tag.validityHighLimit)
-            worksheet2.write(cv_row, 42, tag.validityLowLimit)
+            worksheet2.write(cv_row, 1, tag.description)
+            worksheet2.write(cv_row, 2, tag.units)
+            worksheet2.write(cv_row, 3, tag.measurementTag)
+            worksheet2.write(cv_row, 4, tag.utag)
+            worksheet2.write(cv_row, 5, tag.dynamicHighLimitConcern)
+            worksheet2.write(cv_row, 6, tag.dynamicHighLimitZone)
+            worksheet2.write(cv_row, 7, tag.dynamicLowLimitConcern)
+            worksheet2.write(cv_row, 8, tag.dynamicLowLimitZone)
+            worksheet2.write(cv_row, 9, tag.dynamicTargetConcern)
+            worksheet2.write(cv_row, 10, tag.eceInEngineeringUnits)
+            worksheet2.write(cv_row, 11, tag.engineeringHighLimit)
+            worksheet2.write(cv_row, 12, tag.engineeringLowLimit)
+            worksheet2.write(cv_row, 13, tag.engineeringHighLimitJustification)
+            worksheet2.write(cv_row, 14, tag.engineeringLowLimitJustification)
+            worksheet2.write(cv_row, 15, tag.etParticipationSwitch)
+            worksheet2.write(cv_row, 16, tag.isCritical)
+            worksheet2.write(cv_row, 17, tag.lpCost)
+            worksheet2.write(cv_row, 18, tag.maximumImbalances)
+            worksheet2.write(cv_row, 19, tag.maximumSteadyStateCVStep)
+            worksheet2.write(cv_row, 20, tag.operatorHighLimit)
+            worksheet2.write(cv_row, 21, tag.operatorLowLimit)
+            worksheet2.write(cv_row, 22, tag.predErrorFilterHorizon)
+            worksheet2.write(cv_row, 23, tag.predErrorFilterLag)
+            worksheet2.write(cv_row, 24, tag.predErrorFilterType)
+            worksheet2.write(cv_row, 25, tag.rampHorizon)
+            worksheet2.write(cv_row, 26, tag.rampRate)
+            worksheet2.write(cv_row, 27, tag.rampSetpoint)
+            worksheet2.write(cv_row, 28, tag.rampControllerShedOption)
+            worksheet2.write(cv_row, 29, tag.rotationFactor)
+            worksheet2.write(cv_row, 30, tag.ssHighLimitConcern)
+            worksheet2.write(cv_row, 31, tag.ssHighLimitRank)
+            worksheet2.write(cv_row, 32, tag.ssHighLimitRankTypeQP)
+            worksheet2.write(cv_row, 33, tag.ssLowLimitConcern)
+            worksheet2.write(cv_row, 34, tag.ssLowLimitRank)
+            worksheet2.write(cv_row, 35, tag.ssLowLimitRankTypeQP)
+            worksheet2.write(cv_row, 36, tag.ssTargetConcern)
+            worksheet2.write(cv_row, 37, tag.ssTargetConcernLower)
+            worksheet2.write(cv_row, 38, tag.ssTargetConcernUpper)
+            worksheet2.write(cv_row, 39, tag.ssTargetRank)
+            worksheet2.write(cv_row, 40, tag.ssTargetRankLower)
+            worksheet2.write(cv_row, 41, tag.ssTargetRankUpper)
+            worksheet2.write(cv_row, 42, tag.subcontrollerName)
+            worksheet2.write(cv_row, 43, tag.validityHighLimit)
+            worksheet2.write(cv_row, 44, tag.validityLowLimit)
     workbook.close()
-
-
-def write_CV_tags(tags, output_file):
-    # Write the tags to CSV
-    with open(output_file, 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=['DMCTagName', 'MeasurementTag', 'Description', 'DynamicHighLimitConcern', 'DynamicHighLimitZone', 'DynamicLowLimitConcern', 'DynamicLowLimitZone',
-                                                  'DynamicTargetConcern', 'ECEsInEngineeringUnits', 'EngineeringHighLimit', 'EngineeringLowLimit', 'EngineeringHighLimitJustification', 
-                                                  'EngineeringLowLimitJustification', 'ETParticipationSwitch', 'IsCritical', 'LPCost', 'MaximumImbalances', 'MaximumSteadyStateCVStep', 
-                                                  'OperatorHighLimit', 'OperatorLowLimit', 'PredErrorFilterHorizon', 'PredErrorFilterLag', 'PredErrorFilterType', 'RampHorizon', 
-                                                  'RampRate', 'RampSetpoint', 'RampControllerShedOption', 'RotationFactor', 'SSHighLimitConcern', 'SSHighLimitRank', 'SSHighLimitRankTypeQP', 
-                                                  'SSLowLimitConcern', 'SSLowLimitRank', 'SSLowLimitRankTypeQP', 'SSTargetConcern', 'SSTargetConcernLower', 'SSTargetConcernUpper', 
-                                                  'SSTargetRank', 'SSTargetRankLower', 'SSTargetRankUpper', 'Units', 'ValidityHighLimit', 'ValidityLowLimit'])
-        writer.writeheader()
-        for tag in tags:
-            writer.writerow({'DMCTagName': tag.dmcTagName, 'MeasurementTag': tag.measurementTag, 'Description': tag.description, 'DynamicHighLimitConcern': tag.dynamicHighLimitConcern, 
-                             'DynamicHighLimitZone': tag.dynamicHighLimitZone, 'DynamicLowLimitConcern': tag.dynamicLowLimitConcern, 'DynamicLowLimitZone': tag.dynamicLowLimitZone, 
-                             'DynamicTargetConcern': tag.dynamicTargetConcern, 'ECEsInEngineeringUnits': tag.eceInEngineeringUnits, 'EngineeringHighLimit': tag.engineeringHighLimit, 
-                             'EngineeringLowLimit': tag.engineeringLowLimit, 'EngineeringHighLimitJustification': tag.engineeringHighLimitJustification, 
-                             'EngineeringLowLimitJustification': tag.engineeringLowLimitJustification, 'ETParticipationSwitch': tag.etParticipationSwitch, 'IsCritical': tag.isCritical, 
-                             'LPCost': tag.lpCost, 'MaximumImbalances': tag.maximumImbalances, 'MaximumSteadyStateCVStep': tag.maximumSteadyStateCVStep, 'OperatorHighLimit': tag.operatorHighLimit, 
-                             'OperatorLowLimit': tag.operatorLowLimit, 'PredErrorFilterHorizon': tag.predErrorFilterHorizon, 'PredErrorFilterLag': tag.predErrorFilterLag, 
-                             'PredErrorFilterType': tag.predErrorFilterType, 'RampHorizon': tag.rampHorizon, 'RampRate': tag.rampRate, 'RampSetpoint': tag.rampSetpoint, 
-                             'RampControllerShedOption': tag.rampControllerShedOption, 'RotationFactor': tag.rotationFactor, 'SSHighLimitConcern': tag.ssHighLimitConcern, 
-                             'SSHighLimitRank': tag.ssHighLimitRank, 'SSHighLimitRankTypeQP': tag.ssHighLimitRankTypeQP, 'SSLowLimitConcern': tag.ssLowLimitConcern, 
-                             'SSLowLimitRank': tag.ssLowLimitRank, 'SSLowLimitRankTypeQP': tag.ssLowLimitRankTypeQP, 'SSTargetConcern': tag.ssTargetConcern, 
-                             'SSTargetConcernLower': tag.ssTargetConcernLower, 'SSTargetConcernUpper': tag.ssTargetConcernUpper, 'SSTargetRank': tag.ssTargetRank, 
-                             'SSTargetRankLower': tag.ssTargetRankLower, 'SSTargetRankUpper': tag.ssTargetRankUpper, 'Units': tag.units, 'ValidityHighLimit': tag.validityHighLimit,
-                             'ValidityLowLimit': tag.validityLowLimit})
-
-def write_MV_tags(tags, output_file):
-    # Write the tags to CSV
-    with open(output_file, 'w', newline='') as file:
-        writer = csv.DictWriter(file, fieldnames=['DMCTagName', 'MeasurementTag', 'CostRank', 'Description', 'DynamicMinimumMovement', 'EngineeringHighLimit', 'EngineeringHighLimitJustification',
-                                                  'EngineeringLowLimit', 'EngineeringLowLimitJustification', 'ETParticipationSwitch', 'LPCost', 'MaximumMove', 'MoveSuppression', 
-                                                  'OperatorHighLimit', 'OperatorLowLimit', 'SSMoveLimit', 'SSTargetConcern', 'SSTargetConcernLower', 'SSTargetConcernUpper', 
-                                                  'SSTargetRank', 'SSTargetRankLower', 'SSTargetRankUpper', 'SteadyStateMinMovement', 'SubcontrollerName', 'Units', 'ValidityHighLimit', 
-                                                  'ValidityLowLimit'])
-        writer.writeheader()
-        for tag in tags:
-            writer.writerow({'DMCTagName': tag.dmcTagName, 'MeasurementTag': tag.measurementTag, 'CostRank': tag.costRank, 'Description': tag.description, 
-                             'DynamicMinimumMovement': tag.dynamicMinimumMovement, 'EngineeringHighLimit': tag.engineeringHighLimit, 
-                             'EngineeringHighLimitJustification': tag.engineeringHighLimitJustification, 'EngineeringLowLimit': tag.engineeringLowLimit, 
-                             'EngineeringLowLimitJustification': tag.engineeringLowLimitJustification, 'ETParticipationSwitch': tag.etParticipationSwitch, 'LPCost': tag.lpCost, 
-                             'MaximumMove': tag.maximumMove, 'MoveSuppression': tag.moveSuppression, 'OperatorHighLimit': tag.operatorHighLimit, 'OperatorLowLimit': tag.operatorLowLimit, 
-                             'SSMoveLimit': tag.ssMoveLimit, 'SSTargetConcern': tag.ssTargetConcern, 'SSTargetConcernLower': tag.ssTargetConcernLower, 'SSTargetConcernUpper': tag.ssTargetConcernUpper, 
-                             'SSTargetRank': tag.ssTargetRank, 'SSTargetRankLower': tag.ssTargetRankLower, 'SSTargetRankUpper': tag.ssTargetRankUpper, 'SteadyStateMinMovement': tag.steadyStateMinMovement, 
-                             'SubcontrollerName': tag.subcontrollerName, 'Units': tag.units, 'ValidityHighLimit': tag.validityHighLimit, 'ValidityLowLimit': tag.validityLowLimit})
 
 if __name__ == '__main__':
      main()
