@@ -119,55 +119,55 @@ class CV_Object:
         parameterList.append(self.validityLowLimit)
         return parameterList
     
-    def createParameterListNames(self):
-        """Create list of parameter names in preferred order"""
-        parameterListNames = []
-        parameterListNames.append('DMC Tag Name')
-        parameterListNames.append('Measurement Tag')
-        parameterListNames.append('Description')
-        parameterListNames.append('Dynamic High Limit Concern')
-        parameterListNames.append('Dynamic High Limit Zone')
-        parameterListNames.append('Dynamic Low Limit Concern')
-        parameterListNames.append('Dynamic Low Limit Zone')
-        parameterListNames.append('Dynamic Target Concern')
-        parameterListNames.append('ECE in Engineering Units')
-        parameterListNames.append('Engineering High Limit')
-        parameterListNames.append('Engineering Low Limit')
-        parameterListNames.append('Engineering High Limit Justification')
-        parameterListNames.append('Engineering Low Limit Justification')
-        parameterListNames.append('ET Participation Switch')
-        parameterListNames.append('Is Critical')
-        parameterListNames.append('LP Cost')
-        parameterListNames.append('Maximum Imbalances')
-        parameterListNames.append('Maximum Steady State CV Step')
-        parameterListNames.append('Operator High Limit')
-        parameterListNames.append('Operator Low Limit')
-        parameterListNames.append('Pred Error Filter Horizon')
-        parameterListNames.append('Pred Error Filter Lag')
-        parameterListNames.append('Pred Error Filter Type')
-        parameterListNames.append('Ramp Horizon')
-        parameterListNames.append('Ramp Rate')
-        parameterListNames.append('Ramp Setpoint')
-        parameterListNames.append('Ramp Controller Shed Option')
-        parameterListNames.append('Rotation Factor')
-        parameterListNames.append('SS High Limit Concern')
-        parameterListNames.append('SS High Limit Rank')
-        parameterListNames.append('SS High Limit Rank Type QP')
-        parameterListNames.append('SS Low Limit Concern')
-        parameterListNames.append('SS Low Limit Rank')
-        parameterListNames.append('SS Low Limit Rank Type QP')
-        parameterListNames.append('SS Target Concern')
-        parameterListNames.append('SS Target Concern Lower')
-        parameterListNames.append('SS Target Concern Upper')
-        parameterListNames.append('SS Target Rank')
-        parameterListNames.append('SS Target Rank Lower')
-        parameterListNames.append('SS Target Rank Upper')
-        parameterListNames.append('Subcontroller Name')
-        parameterListNames.append('Units')
-        parameterListNames.append('Utag')
-        parameterListNames.append('Validity High Limit')
-        parameterListNames.append('Validity Low Limit')
-        return parameterListNames
+def createCVParameterListNames(self):
+    """Create list of parameter names in preferred order"""
+    parameterListNames = []
+    parameterListNames.append('DMC Tag Name')
+    parameterListNames.append('Measurement Tag')
+    parameterListNames.append('Description')
+    parameterListNames.append('Dynamic High Limit Concern')
+    parameterListNames.append('Dynamic High Limit Zone')
+    parameterListNames.append('Dynamic Low Limit Concern')
+    parameterListNames.append('Dynamic Low Limit Zone')
+    parameterListNames.append('Dynamic Target Concern')
+    parameterListNames.append('ECE in Engineering Units')
+    parameterListNames.append('Engineering High Limit')
+    parameterListNames.append('Engineering Low Limit')
+    parameterListNames.append('Engineering High Limit Justification')
+    parameterListNames.append('Engineering Low Limit Justification')
+    parameterListNames.append('ET Participation Switch')
+    parameterListNames.append('Is Critical')
+    parameterListNames.append('LP Cost')
+    parameterListNames.append('Maximum Imbalances')
+    parameterListNames.append('Maximum Steady State CV Step')
+    parameterListNames.append('Operator High Limit')
+    parameterListNames.append('Operator Low Limit')
+    parameterListNames.append('Pred Error Filter Horizon')
+    parameterListNames.append('Pred Error Filter Lag')
+    parameterListNames.append('Pred Error Filter Type')
+    parameterListNames.append('Ramp Horizon')
+    parameterListNames.append('Ramp Rate')
+    parameterListNames.append('Ramp Setpoint')
+    parameterListNames.append('Ramp Controller Shed Option')
+    parameterListNames.append('Rotation Factor')
+    parameterListNames.append('SS High Limit Concern')
+    parameterListNames.append('SS High Limit Rank')
+    parameterListNames.append('SS High Limit Rank Type QP')
+    parameterListNames.append('SS Low Limit Concern')
+    parameterListNames.append('SS Low Limit Rank')
+    parameterListNames.append('SS Low Limit Rank Type QP')
+    parameterListNames.append('SS Target Concern')
+    parameterListNames.append('SS Target Concern Lower')
+    parameterListNames.append('SS Target Concern Upper')
+    parameterListNames.append('SS Target Rank')
+    parameterListNames.append('SS Target Rank Lower')
+    parameterListNames.append('SS Target Rank Upper')
+    parameterListNames.append('Subcontroller Name')
+    parameterListNames.append('Units')
+    parameterListNames.append('Utag')
+    parameterListNames.append('Validity High Limit')
+    parameterListNames.append('Validity Low Limit')
+    return parameterListNames
 
 
 class MV_Object:
@@ -235,38 +235,38 @@ class MV_Object:
         parameterList.append(self.validityLowLimit)
         return parameterList
     
-    def createParameterListNames(self):
-        """Create list of parameter names in preferred order"""
-        parameterListNames = []
-        parameterListNames.append('DMC Tag Name')
-        parameterListNames.append('Measurement Tag')
-        parameterListNames.append('Cost Rank')
-        parameterListNames.append('Description')
-        parameterListNames.append('Dynamic Minimum Movement')
-        parameterListNames.append('Engineering High Limit')
-        parameterListNames.append('Engineering High Limit Justification')
-        parameterListNames.append('Engineering Low Limit')
-        parameterListNames.append('Engineering Low Limit Justification')
-        parameterListNames.append('ET Participation Switch')
-        parameterListNames.append('LP Cost')
-        parameterListNames.append('Maximum Move')
-        parameterListNames.append('Move Suppression')
-        parameterListNames.append('Operator High Limit')
-        parameterListNames.append('Operator Low Limit')
-        parameterListNames.append('SS Move Limit')
-        parameterListNames.append('SS Target Concern')
-        parameterListNames.append('SS Target Concern Lower')
-        parameterListNames.append('SS Target Concern Upper')
-        parameterListNames.append('SS Target Rank')
-        parameterListNames.append('SS Target Rank Lower')
-        parameterListNames.append('SS Target Rank Upper')
-        parameterListNames.append('Steady State Min Movement')
-        parameterListNames.append('Subcontroller Name')
-        parameterListNames.append('Units')
-        parameterListNames.append('Utag')
-        parameterListNames.append('Validity High Limit')
-        parameterListNames.append('Validity Low Limit')
-        return parameterListNames
+def createMVParameterListNames(self):
+    """Create list of parameter names in preferred order"""
+    parameterListNames = []
+    parameterListNames.append('DMC Tag Name')
+    parameterListNames.append('Measurement Tag')
+    parameterListNames.append('Cost Rank')
+    parameterListNames.append('Description')
+    parameterListNames.append('Dynamic Minimum Movement')
+    parameterListNames.append('Engineering High Limit')
+    parameterListNames.append('Engineering High Limit Justification')
+    parameterListNames.append('Engineering Low Limit')
+    parameterListNames.append('Engineering Low Limit Justification')
+    parameterListNames.append('ET Participation Switch')
+    parameterListNames.append('LP Cost')
+    parameterListNames.append('Maximum Move')
+    parameterListNames.append('Move Suppression')
+    parameterListNames.append('Operator High Limit')
+    parameterListNames.append('Operator Low Limit')
+    parameterListNames.append('SS Move Limit')
+    parameterListNames.append('SS Target Concern')
+    parameterListNames.append('SS Target Concern Lower')
+    parameterListNames.append('SS Target Concern Upper')
+    parameterListNames.append('SS Target Rank')
+    parameterListNames.append('SS Target Rank Lower')
+    parameterListNames.append('SS Target Rank Upper')
+    parameterListNames.append('Steady State Min Movement')
+    parameterListNames.append('Subcontroller Name')
+    parameterListNames.append('Units')
+    parameterListNames.append('Utag')
+    parameterListNames.append('Validity High Limit')
+    parameterListNames.append('Validity Low Limit')
+    return parameterListNames
 
 # Functions
 def main():
@@ -532,11 +532,11 @@ def write_tags_excel(tags, output_file):
     worksheet2 = workbook.add_worksheet('CV')
     
     # Write out MV Parameter List Names
-    for i, parameter in enumerate(tags[0].createParameterListNames()):
+    for i, parameter in enumerate(tags[0].createMVParameterListNames()):
         worksheet1.write(0, i, parameter)
 
     # Write out CV Parameter List Names
-    for i, parameter in enumerate(tags[0].createParameterListNames()):
+    for i, parameter in enumerate(tags[0].createCVParameterListNames()):
         worksheet2.write(0, i, parameter)
 
     mv_row = 0
