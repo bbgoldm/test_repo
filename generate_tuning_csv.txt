@@ -70,7 +70,8 @@ class CV_Object:
         self.validityLowLimit = None
     
     def createParameterList(self):
-        """Create a list of parameters in preferred order"""
+        """Create a list of parameters in preferred order.
+            Must match the ordering of ParameterListNames"""
         parameterList = []
         parameterList.append(self.dmcTagName)
         parameterList.append(self.measurementTag)
@@ -119,8 +120,10 @@ class CV_Object:
         parameterList.append(self.validityLowLimit)
         return parameterList
     
-def createCVParameterListNames(self):
-    """Create list of parameter names in preferred order"""
+def createCVParameterListNames():
+    """Create list of parameter names in preferred order.
+        Must match the ordering of ParameterList
+    """
     parameterListNames = []
     parameterListNames.append('DMC Tag Name')
     parameterListNames.append('Measurement Tag')
@@ -203,7 +206,9 @@ class MV_Object:
         self.validityLowLimit = None
     
     def createParameterList(self):
-        """Create a list of parameters in preferred order"""
+        """Create a list of parameters in preferred order.
+        Must match the ordering of ParameterListNames
+        """
         parameterList = []
         parameterList.append(self.dmcTagName)
         parameterList.append(self.measurementTag)
@@ -235,8 +240,9 @@ class MV_Object:
         parameterList.append(self.validityLowLimit)
         return parameterList
     
-def createMVParameterListNames(self):
-    """Create list of parameter names in preferred order"""
+def createMVParameterListNames():
+    """Create list of parameter names in preferred order.
+            Must match the ordering of ParameterList"""
     parameterListNames = []
     parameterListNames.append('DMC Tag Name')
     parameterListNames.append('Measurement Tag')
@@ -532,11 +538,11 @@ def write_tags_excel(tags, output_file):
     worksheet2 = workbook.add_worksheet('CV')
     
     # Write out MV Parameter List Names
-    for i, parameter in enumerate(tags[0].createMVParameterListNames()):
+    for i, parameter in enumerate(createMVParameterListNames()):
         worksheet1.write(0, i, parameter)
 
     # Write out CV Parameter List Names
-    for i, parameter in enumerate(tags[0].createCVParameterListNames()):
+    for i, parameter in enumerate(createCVParameterListNames()):
         worksheet2.write(0, i, parameter)
 
     mv_row = 0
